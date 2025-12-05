@@ -1,1 +1,1426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Numia POS Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 0 16px;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+    }
+    p.desc {
+      text-align:center;
+      font-size:14px;
+      margin-bottom:16px;
+      color:#cbd5f5;
+    }
+    .card {
+      background: #111827;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid #1f2937;
+    }
+    label {
+      font-size: 14px;
+      margin-bottom: 4px;
+      display: block;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      border: 1px solid #4b5563;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 999px;
+      border: none;
+      background: #22c55e;
+      color: #022c22;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #16a34a;
+    }
+    #risultato {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #020617;
+      border: 1px solid #1f2937;
+      min-height: 40px;
+      white-space: pre-line;
+    }
+    .notfound { color: #f97373; }
+  </style>
+</head>
+<body>
+  <h1>Numia POS Finder</h1>
+  <p class="desc">
+    Digita il <strong>codice articolo</strong> (es. D32M, A920, VX520…) e premi “Cerca articolo”.
+  </p>
 
+  <div class="card">
+    <label for="articolo">Codice articolo</label>
+    <input type="text" id="articolo" placeholder="Es. D32M">
+
+    <button id="btnCerca">Cerca articolo</button>
+
+    <div id="risultato"></div>
+  </div>
+
+  <script>
+    /* Tutti i dati sono integrati qui, presi dal tuo JSON */
+    const dati = [
+      {
+        "Articolo": "D32M",
+        "DESCRIZIONE": "DESK3200 CLESS ",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "D32MPPC",
+        "DESCRIZIONE": "DESK3200 CLESS + PP CLESS",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "D32ME",
+        "DESCRIZIONE": "DESK3200 CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D32MEPPC",
+        "DESCRIZIONE": "DESK3200 CLESS ETH + PP CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D32GEM",
+        "DESCRIZIONE": "DESK3200 CLESS ETH + BCK GPRS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D32GEMPPC",
+        "DESCRIZIONE": "DESK3200 CLES ETH+BCKGPRS+PPC",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D32GPR",
+        "DESCRIZIONE": "DESK3200 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D32GPRPPC",
+        "DESCRIZIONE": "DESK3200 CLESS GPRS+PP CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "M35M",
+        "DESCRIZIONE": "MOV3500 CLESS CORDLESS",
+        "TIPO": "CORDLESS"
+      },
+      {
+        "Articolo": "M35ME",
+        "DESCRIZIONE": "MOV3500 CLESS CORDLESS ETH",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "M25GPRS",
+        "DESCRIZIONE": "MOV2500 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "M25GSM",
+        "DESCRIZIONE": "MOV2500 CLESS GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "D32GSM",
+        "DESCRIZIONE": "DESK3200 CLESS GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "D32GSMPPC",
+        "DESCRIZIONE": "DESK3200 CLESS GSM+PP CLESS",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "ICT220LT",
+        "DESCRIZIONE": "ICT220 CLESS LIGHT",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "ICT220LTE",
+        "DESCRIZIONE": "ICT220 CLESS ETHERNET LIGHT",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D5000E",
+        "DESCRIZIONE": "DESK5000 ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D5000GPR",
+        "DESCRIZIONE": "DESK5000 GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D5000EGPR",
+        "DESCRIZIONE": "DESK5000 ETHERNET+GPRS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D5000EGPRP",
+        "DESCRIZIONE": "DESK5000 ETHERNET+GPRS+PINPAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D5000EP",
+        "DESCRIZIONE": "DESK5000 ETHERNET+PINPAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D5000GPRP",
+        "DESCRIZIONE": "DESK5000 GPRS+PINPAD",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "ML2500",
+        "DESCRIZIONE": "LINK 2500",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "ICTCOOP",
+        "DESCRIZIONE": "ICT220 COOPERA",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "IWLCOOP",
+        "DESCRIZIONE": "IWL221 COOPERA",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "M25WF",
+        "DESCRIZIONE": "MOV2500 WIFI",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "M25GPR",
+        "DESCRIZIONE": "MOV2500 GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D26ME",
+        "DESCRIZIONE": "DESK2600 CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D26MEPPC",
+        "DESCRIZIONE": "DESK2600 CLESS ETHERNET + PINPAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D26GPRS",
+        "DESCRIZIONE": "DESK2600 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D26GPRPPC",
+        "DESCRIZIONE": "DESK2600 CLESS GPRS + PINPAD CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D26GEM",
+        "DESCRIZIONE": "DESK2600 CLESS ETH + BCK GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D26GEMPPC",
+        "DESCRIZIONE": "DESK2600 CLES ETH+BCKGPRS+PPC",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80M",
+        "DESCRIZIONE": "S80 DESKTOP",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "S80MPP",
+        "DESCRIZIONE": "S80 DESKTOP CON PIN PAD",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "S80MPPC",
+        "DESCRIZIONE": "S80 DESKTOP CON PIN PAD CLESS",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "S80EM",
+        "DESCRIZIONE": "S80 ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80EMPP",
+        "DESCRIZIONE": "S80 ETHERNET CON PIN PAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80EMPPC",
+        "DESCRIZIONE": "S80 ETHERNET CON PIN PAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80GSM",
+        "DESCRIZIONE": "S80 DESKTOP GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S80GSMPP",
+        "DESCRIZIONE": "S80 DESKTOP GSM + PIN PAD",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S80GSMPPC",
+        "DESCRIZIONE": "S80 DESKTOP GSM + PIN PAD CLESS",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S80GPRS",
+        "DESCRIZIONE": "S80 DESKTOP GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80GPRSPP",
+        "DESCRIZIONE": "S80 DESKTOP GPRS + PIN PAD",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80GPRSPP",
+        "DESCRIZIONE": "S80 DESKTOP GPRS + PIN PAD CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S90GSM",
+        "DESCRIZIONE": "S90 GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S90GPRS",
+        "DESCRIZIONE": "S90 GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80GEM",
+        "DESCRIZIONE": "S80GEM ETH GPRS CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CM",
+        "DESCRIZIONE": "S80 CLESS DESKTOP",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "S80CMPP",
+        "DESCRIZIONE": "S80 CLESS DESKTOP CON PIN PAD",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "S80CMPPC",
+        "DESCRIZIONE": "S80 CLESS DESKTOP CON PIN PAD CLESS",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "S80CEM",
+        "DESCRIZIONE": "S80 CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CEMPP",
+        "DESCRIZIONE": "S80 CLESS ETHERNET CON PIN PAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CEMPPC",
+        "DESCRIZIONE": "S80 CLESS ETHERNET CON PIN PAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CGSM",
+        "DESCRIZIONE": "S80 CLESS DESKTOP GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S80CGSMPP",
+        "DESCRIZIONE": "S80 CLESS DESKTOP GSM CON PIN PAD",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S80CGSMPPC",
+        "DESCRIZIONE": "S80 CLESS DESKTOP GSM CON PIN PAD CLESS",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S80CGPRS",
+        "DESCRIZIONE": "S80 CLESS DESKTOP GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80CGPRSPP",
+        "DESCRIZIONE": "S80 CLESS DESKTOP GPRS CON PIN PAD",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80CGPRSPP",
+        "DESCRIZIONE": "S80 CLESS DESKTOP GPRS CON PIN PAD CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S90CGSM",
+        "DESCRIZIONE": "S90 CLESS GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "S90CGPRS",
+        "DESCRIZIONE": "S90 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "S80CS",
+        "DESCRIZIONE": "S80 CRAI/SMA",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CSPPC",
+        "DESCRIZIONE": "S80 CRAI/SMA + PINPAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CSG",
+        "DESCRIZIONE": "S80 CRAI/SMA + BACKUP GPRS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S80CSGPPC",
+        "DESCRIZIONE": "S80 CRAI/SMA + BACKUP GPRS + PINPAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D210CBM",
+        "DESCRIZIONE": "D210 CLESS CORDLESS",
+        "TIPO": "CORDLESS"
+      },
+      {
+        "Articolo": "D210CBEM",
+        "DESCRIZIONE": "D210 CLESS CORDLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D210CGPRS",
+        "DESCRIZIONE": "D210 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D210CW",
+        "DESCRIZIONE": "D210 CLESS WIFI",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "D210GTEMP",
+        "DESCRIZIONE": "D210 CLESS GPRS TEMPORANEO",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D210CGSM",
+        "DESCRIZIONE": "D210 CLESS GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "A930",
+        "DESCRIZIONE": "PAX A930",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A930U",
+        "DESCRIZIONE": "PAX A930 UMTS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "E700",
+        "DESCRIZIONE": "PAX E700",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "E700U",
+        "DESCRIZIONE": "PAX E700 UMTS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920",
+        "DESCRIZIONE": "PAX A920",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920U",
+        "DESCRIZIONE": "PAX A920 UMTS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910C",
+        "DESCRIZIONE": "PAX A910 CORDLESS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910W",
+        "DESCRIZIONE": "PAX A910 WiFi",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910G",
+        "DESCRIZIONE": "PAX A910 4G",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920C",
+        "DESCRIZIONE": "PAX A920PRO CORDLESS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920W",
+        "DESCRIZIONE": "PAX A920PRO WiFi",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920G",
+        "DESCRIZIONE": "PAX A920PRO 4G",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "Q58ME",
+        "DESCRIZIONE": "DESKQ58 CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "Q58MEPPC",
+        "DESCRIZIONE": "DESKQ58 CLESS ETHERNET + PINPAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "Q58GPRS",
+        "DESCRIZIONE": "DESKQ58 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "Q58GPRSPPC",
+        "DESCRIZIONE": "DESKQ58 CLESS GPRS + PINPAD CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D200",
+        "DESCRIZIONE": "PAX D200 CLESS MPOS",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "D200CREA",
+        "DESCRIZIONE": "PAX D200 CLESS MPOS CREA",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "VX520",
+        "DESCRIZIONE": "VX520 DESKTOP",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "VX520-PP",
+        "DESCRIZIONE": "VX520 DESKTOP CON PIN PAD",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "VX520E",
+        "DESCRIZIONE": "VX520 ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520E-PP",
+        "DESCRIZIONE": "VX520 ETHERNET CON PIN PAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520GPRS",
+        "DESCRIZIONE": "VX520 ETH+GPRS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520GPRS-PP",
+        "DESCRIZIONE": "VX520 ETH+GPRS CON PIN PAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX680G",
+        "DESCRIZIONE": "VX680 GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX520C",
+        "DESCRIZIONE": "VX520 CLESS DESKTOP",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "VX520C-PP",
+        "DESCRIZIONE": "VX520 CLESS DESKTOP+PIN PAD",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "VX520CE",
+        "DESCRIZIONE": "VX520 CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CE-PP",
+        "DESCRIZIONE": "VX520 CLESS ETHERNET+PIN PAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CGPRS",
+        "DESCRIZIONE": "VX520 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX520CGPRS-PP",
+        "DESCRIZIONE": "VX520 CLESS GPRS+PIN PAD",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX520C-PPC",
+        "DESCRIZIONE": "VX520 CLESS DESKTOP+PIN PAD CLESS",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "VX520CE-PPC",
+        "DESCRIZIONE": "VX520 CLESS ETHERNET+PIN PAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CGPRS-PPC ",
+        "DESCRIZIONE": "VX520 CLESS GPRS+PIN PAD CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX675G",
+        "DESCRIZIONE": "VX675 GPRS CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX680GCT",
+        "DESCRIZIONE": "VX680 GPRS CLESS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX520CGSM",
+        "DESCRIZIONE": "VX520 CLESS GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "VX520CGSM-PP",
+        "DESCRIZIONE": "VX520 CLESS GSM+PIN PAD",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "VX520CGSM-PPC ",
+        "DESCRIZIONE": "VX520 CLESS GSM+PIN PAD CLESS",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "VX675GSM",
+        "DESCRIZIONE": "VX675 GSM CLESS",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "VX675CB",
+        "DESCRIZIONE": "VX675 CLESS CORDLESS",
+        "TIPO": "CORDLESS"
+      },
+      {
+        "Articolo": "VX675CBE",
+        "DESCRIZIONE": "VX675 CLESS CORDLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX675NG",
+        "DESCRIZIONE": "VX675 GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "VX680GSM",
+        "DESCRIZIONE": "VX680 GSM",
+        "TIPO": "GSM "
+      },
+      {
+        "Articolo": "VX820CE",
+        "DESCRIZIONE": "VX820 CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CS",
+        "DESCRIZIONE": "VX520 CRAI/SMA",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CSPPC",
+        "DESCRIZIONE": "VX520 CRAI/SMA + PINPAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CSG",
+        "DESCRIZIONE": "VX520 CRAI/SMA + BACKUP GPRS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "VX520CSGPPC",
+        "DESCRIZIONE": "VX520 CRAI/SMA + BACKUP GPRS + PINPAD CLESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "PAXA50W",
+        "DESCRIZIONE": "PAX A50 ANDROID MINI",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "PAXA50GPRS",
+        "DESCRIZIONE": "PAX A50 ANDROID MINI GPRS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "D230CGPRS",
+        "DESCRIZIONE": "D230 CLESS GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "D230CW",
+        "DESCRIZIONE": "D230 CLESS WIFI",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "POSCOLONNI",
+        "DESCRIZIONE": "COLONNINE DISTRIBUTORI   ",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "COLHGEPOS",
+        "DESCRIZIONE": "COLONNINA HGEPOS",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "COLGPRS",
+        "DESCRIZIONE": "COLONNINA GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "COLADSL",
+        "DESCRIZIONE": "COLONNINA ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "POSETH",
+        "DESCRIZIONE": "TERMINALE ETHERNET PROPRIETA ESERCENTE",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BRICO",
+        "DESCRIZIONE": "TERMINALE BRICOFER ",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "BRICOE",
+        "DESCRIZIONE": "TERMINALE BRICOFER ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BRICOG",
+        "DESCRIZIONE": "TERMINALE BRICOFER GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "POSGPRS",
+        "DESCRIZIONE": "TERMINALE GPRS PROPRIETA ESERCENTE",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "V3M2GPRS",
+        "DESCRIZIONE": "CASTLES 3G/4G/GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "V3M2CORD",
+        "DESCRIZIONE": "CASTLES CORLDESS",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "V3000GPRS",
+        "DESCRIZIONE": "CASTLES VEGA3000 M2 GPRS 3G",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "V3000DSK",
+        "DESCRIZIONE": "CASTLES VEGA3000 DESKTOP",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "V3000DSKPPC",
+        "DESCRIZIONE": "CASTLES VEGA3000 DESKTOP + PIN PAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "S1F3CRD",
+        "DESCRIZIONE": "CASTLES ANDROID CORDLESS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "S1F3WIFI",
+        "DESCRIZIONE": "CASTLES ANDROID WIFI",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "S1F3GPR",
+        "DESCRIZIONE": "CASTLES ANDROID GPRS",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "AUREUSEMV",
+        "DESCRIZIONE": "AUREUS PLUS EMV",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "AUREUSEMVCO",
+        "DESCRIZIONE": "AUREUS PLUS CORDLESS EMV",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "AUREUSEMVGS",
+        "DESCRIZIONE": "AUREUS PLUS GSM EMV",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "SOFTPOS",
+        "DESCRIZIONE": "SOFT POS",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "SOFTPOSPK1",
+        "DESCRIZIONE": "SOFT POS PACK1",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "SOFTPOSPK2",
+        "DESCRIZIONE": "SOFT POS PACK2",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "POSNCR",
+        "DESCRIZIONE": "CASSA NCR                ",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "POSIALE",
+        "DESCRIZIONE": "CASSA IALE               ",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "POSSID",
+        "DESCRIZIONE": "CASSA SID",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "POSIBM",
+        "DESCRIZIONE": "CASSA IBM",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "POSARGE",
+        "DESCRIZIONE": "POS ARGENTEA",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "NURIT8210",
+        "DESCRIZIONE": "LIPMAN 8210 EMV",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "NURIT8020GSM",
+        "DESCRIZIONE": "LIPMAN 8020 GSM",
+        "TIPO": "GSM"
+      },
+      {
+        "Articolo": "NURIT8400",
+        "DESCRIZIONE": "LIPMAN 8400 EMV",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "NURIT8320",
+        "DESCRIZIONE": "LIPMAN 8320 EMV",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "MOTO",
+        "DESCRIZIONE": "MO.TO.",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "NURIT8210E",
+        "DESCRIZIONE": "LIPMAN 8210 ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "NURIT8020GPRS",
+        "DESCRIZIONE": "LIPMAN 8020 GPRS",
+        "TIPO": "GPRS"
+      },
+      {
+        "Articolo": "SELFCE",
+        "DESCRIZIONE": "POS NON PRESIDIATO CLESS ETHERNET",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "DISTAUTOC",
+        "DESCRIZIONE": "DISTRIBUTORE AUTOMATICO CLESS",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "PMAILP",
+        "DESCRIZIONE": "PAYWAYMAIL STAND-ALONE (PAYWAY)",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "PMAILM",
+        "DESCRIZIONE": "PAYWAYMAIL STAND-ALONE (MOTO)",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "POSVSE",
+        "DESCRIZIONE": "POS VALUESOFT PROPRIETA' ESERCENTE",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "MPAYPRO",
+        "DESCRIZIONE": "M-PAY 0 CANONE",
+        "TIPO": "MOBILE"
+      },
+      {
+        "Articolo": "MPAYBUN",
+        "DESCRIZIONE": "M-PAY BUNDLE 2021                                           ",
+        "TIPO": "MOBILE"
+      },
+      {
+        "Articolo": "PMAILPB",
+        "DESCRIZIONE": "PAYWAYMAIL BUNDLE 2021                                      ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "PAYWAYMSO",
+        "DESCRIZIONE": "PAYWAY MSO",
+        "TIPO": "VIRTUALE"
+      },
+      {
+        "Articolo": "PAYWAYCIT",
+        "DESCRIZIONE": "PAYWAY CIT COMMERCIO ELETTRONICO",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "PAYWAYMIT",
+        "DESCRIZIONE": "PAYWAY MIT COMMERCIO ELETTRONICO   ",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "COLFBIRD",
+        "DESCRIZIONE": "COLONNINA FLOWBIRD",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "COLELET",
+        "DESCRIZIONE": "COLONNINA ELETTRICA",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "SMPLM",
+        "DESCRIZIONE": "MULTIPOS ETHERNET - ADCAPP ESERCENTE AGGIUNTIVO",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "SMPLMU",
+        "DESCRIZIONE": "MULTIPOS UMTS - ADCAPP ESERCENTE AGGIUNTIVO",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "A910GPRO",
+        "DESCRIZIONE": "SMARTPOS CONNECT 4G - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910WPRO",
+        "DESCRIZIONE": "SMARTPOS CONNECT WIFI - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910CPRO",
+        "DESCRIZIONE": "SMARTPOS CONNECT CORDLESS – PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920CASSA",
+        "DESCRIZIONE": "SMART CASSA+AppMyCashUp+Registratore tel. HW",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920CASSAG",
+        "DESCRIZIONE": "SMART CASSA+AppMyCashUp+Registratore tel. HW+SIM",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920GPRO",
+        "DESCRIZIONE": "SMARTPOS CONNECT 4G - PROMO2025",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920WPRO",
+        "DESCRIZIONE": "SMARTPOS CONNECT WIFI - PROMO2025",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920CPRO",
+        "DESCRIZIONE": "SMARTPOS CONNECT CORDLESS – PROMO2025",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910GSC",
+        "DESCRIZIONE": "SMARTPOS CONNECT 4G - SUMMER CONNECT",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910WSC",
+        "DESCRIZIONE": "SMARTPOS CONNECT WIFI - SUMMER CONNECT",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A910CSC",
+        "DESCRIZIONE": "SMARTPOS CONNECT CORDLESS – SUMMER CONNECT",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920GPC",
+        "DESCRIZIONE": "SMARTPOS CONNECT 4G - SPRING CONNECT",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920WPC",
+        "DESCRIZIONE": "SMARTPOS CONNECT WIFI - SPRING CONNECT",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "A920CPC",
+        "DESCRIZIONE": "SMARTPOS CONNECT CORDLESS – SPRING CONNECT",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "SMPC4GES",
+        "DESCRIZIONE": "SMARTPOS CONNECT  PROPR. ESERCENTE 4G                       ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "SMPCETHES",
+        "DESCRIZIONE": "SMARTPOS CONNECT  PROPR. ESERCENTE ETHERNET                 ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "SELSTD",
+        "DESCRIZIONE": "SELEX CONNESSIONE STARDARD",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "SELBAC",
+        "DESCRIZIONE": "SELEX BARRIERA CASSE",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "SELARG",
+        "DESCRIZIONE": "SELEX CONNESSIONE ARGENTEA",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "D32MEAC",
+        "DESCRIZIONE": "DESK3200 CLESS ETHERNET - PROMO AUTUNNO",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "BPM-MOBILEPOS",
+        "DESCRIZIONE": "BPM-MOBILE POS                                              ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-YOUMOBILEPOS",
+        "DESCRIZIONE": "BPM-YOUMOBILE POS",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-DSK",
+        "DESCRIZIONE": "BPM-DESKTOP                                         ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKPPC",
+        "DESCRIZIONE": "BPM-DESKTOP + PINPAD                                 ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKCE",
+        "DESCRIZIONE": "BPM-DESKQ58 + CAVO ETH SCAMBIO IMPORTO                              ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKGEM",
+        "DESCRIZIONE": "BPM-DESKQ58 GEM",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKCEPPC",
+        "DESCRIZIONE": "BPM-DESKQ58 + CAVO ETH SCAMBIO IMPORTO + PINPAD",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-SMTWIFI",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWE",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + CAVO ETH SCAMBIO IMPORTO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWG",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM                                   ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWB",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + BASE                            ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWGB",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM + BASE                          ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWEB",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + CAVO ETH SCAMBIO IMPORTO + BASE                  ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWEGB",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM + CAVO ETH SCAMBIO IMPORTO + BASE       ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWGE",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM + CAVO ETH SCAMBIO IMPORTO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTECRWIFI",
+        "DESCRIZIONE": "BPM-PAX A920 CASSA (WIFI + BASE + SERVIZI)                                     ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTECRWEB",
+        "DESCRIZIONE": "BPM-PAX A930 WIFI + BASE + CAVO ETH SCAMBIO IMPORTO                     ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMPLM",
+        "DESCRIZIONE": "BPM-MULTIPOS ETHERNET - ADCAPP ESERCENTE AGGIUNTIVO       ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-PAY.CO",
+        "DESCRIZIONE": "BPM-DISTRIBUTORE AUTOMATICO PAY.CO - POS UNATTENDED                                ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-SOFTPOS",
+        "DESCRIZIONE": "BPM-SOFT POS                                                ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-BARRCASSE",
+        "DESCRIZIONE": "BPM-BARRIERA CASSE                                          ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-NCRWINEPTS",
+        "DESCRIZIONE": "BPM-CASSA NCR WINEPTS                                       ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-PAYWAY",
+        "DESCRIZIONE": "BPM-PAYWAY                                                  ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-PAYWAYMAIL",
+        "DESCRIZIONE": "BPM-PAYWAY MAIL                                             ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-PAYWAYCIT",
+        "DESCRIZIONE": "BPM-PAYWAY CIT                                              ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-PAYWAYMIT",
+        "DESCRIZIONE": "BPM-PAYWAY MIT                                              ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-COLELET",
+        "DESCRIZIONE": "BPM COLONNINA ELETTRICA",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "BPM-COLTERZI",
+        "DESCRIZIONE": "BPM-COLONNINA CARBURANTE (TERZI)                            ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-DAUTOTERZ",
+        "DESCRIZIONE": "BPM-DISTRIBUTORE AUTOMATICO (TERZI) - POS UNATTENDED                        ",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-PROPESE",
+        "DESCRIZIONE": "BPM-POS DI PROPRIETA’ ESERCENTE",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-ARGENTEA",
+        "DESCRIZIONE": "BPM-POS ARGENTEA",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-COLFBIRD",
+        "DESCRIZIONE": "BPM COLONNINA FLOWBIRD",
+        "TIPO": ""
+      },
+      {
+        "Articolo": "BPM-DSKG",
+        "DESCRIZIONE": "BPM DESKTOP GEM + SIM                                       ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKGPPC",
+        "DESCRIZIONE": "BPM DESKTOP GEM + SIM + PINPAD                              ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKGE",
+        "DESCRIZIONE": "BPM DESKTOP GEM + SIM + SCAMBIO IMPORTO                     ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-DSKGEPPC",
+        "DESCRIZIONE": "BPM DESKTOP GEM + SIM +PINPAD + SCAMBIO IMPORTO             ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-MOBW",
+        "DESCRIZIONE": "BPM MOBILE WIFI                                             ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-MOBWG",
+        "DESCRIZIONE": "BPM MOBILE WIFI + SIM                                       ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-MOBWE",
+        "DESCRIZIONE": "BPM MOBILE WIFI + SCAMBIO IMPORTO                           ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-MOBWEG",
+        "DESCRIZIONE": "BPM MOBILE WIFI + SIM + SCAMBIO IMPORTO                     ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-CORD",
+        "DESCRIZIONE": "BPM CORDLESS                                                ",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "BPM-CORDE",
+        "DESCRIZIONE": "BPM CORDLESS + SCAMBIO IMPORTO                              ",
+        "TIPO": "DESKTOP"
+      },
+      {
+        "Articolo": "BPM-SMTMNW",
+        "DESCRIZIONE": "BPM ANDROID MINI WIFI (PAX A50)                             ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTMNWG",
+        "DESCRIZIONE": "BPM ANDROID MINI WIFI (PAX A50) + SIM                       ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-Q25PAYCO  ",
+        "DESCRIZIONE": "BPM-POS Q25 PAY.CO                                          ",
+        "TIPO": "ETHERNET"
+      },
+      {
+        "Articolo": "BPM-YMOBILENEXI",
+        "DESCRIZIONE": "BPM YOUMOBILE POS NEXI",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "POSNEXI",
+        "DESCRIZIONE": "POS PROPRIETA NEXI",
+        "TIPO": "SPECIALI"
+      },
+      {
+        "Articolo": "BPM-A99W",
+        "DESCRIZIONE": "BPM PAX A99 WIFI",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WB",
+        "DESCRIZIONE": "BPM PAX A99 WIFI + BASE",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WG",
+        "DESCRIZIONE": "BPM PAX A99 WIFI + SIM",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WGB",
+        "DESCRIZIONE": "BPM PAX A99 WIFI + SIM + BASE",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-ADROIDW",
+        "DESCRIZIONE": "BPM-CASTLES ANDROID WIFI",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-ADROIDWG",
+        "DESCRIZIONE": "BPM-CASTLES ANDROID WIFI + SIM                                   ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-ADROIDWB",
+        "DESCRIZIONE": "BPM-CASTLES ANDROID WIFI + BASE                            ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-ADROIDWGB",
+        "DESCRIZIONE": "BPM-CASTLES ANDROID WIFI + SIM + BASE                          ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WP",
+        "DESCRIZIONE": "BPM PAX A99 WIFI - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WBP",
+        "DESCRIZIONE": "BPM PAX A99 WIFI + BASE - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WGP",
+        "DESCRIZIONE": "BPM PAX A99 WIFI + SIM - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-A99WGBP",
+        "DESCRIZIONE": "BPM PAX A99 WIFI + SIM + BASE - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWIFIP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWEP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + CAVO ETH SCAMBIO IMPORTO - PROMO",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWGP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM - PROMO                                 ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWBP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + BASE - PROMO                           ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWGBP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM + BASE - PROMO                         ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWEBP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + CAVO ETH SCAMBIO IMPORTO + BASE - PROMO                 ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWEGBP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM + CAVO ETH SCAMBIO IMPORTO + BASE - PROMO      ",
+        "TIPO": "ANDROID"
+      },
+      {
+        "Articolo": "BPM-SMTWGEP",
+        "DESCRIZIONE": "BPM-PAX A920 WIFI + SIM + CAVO ETH SCAMBIO IMPORTO - PROMO",
+        "TIPO": "ANDROID"
+      }
+    ];
+
+    document.getElementById('btnCerca').addEventListener('click', function () {
+      const input = document.getElementById('articolo').value.trim().toLowerCase();
+      const output = document.getElementById('risultato');
+
+      if (!input) {
+        output.innerHTML = "<span class='notfound'>Inserisci un codice articolo.</span>";
+        return;
+      }
+
+      const trovato = dati.find(r => (r.Articolo || "").toLowerCase() === input);
+
+      if (trovato) {
+        output.textContent =
+          "Articolo: " + (trovato.Articolo || "") + "\n" +
+          "Descrizione: " + (trovato.DESCRIZIONE || "") + "\n" +
+          "Tipo: " + (trovato.TIPO || "");
+      } else {
+        output.innerHTML = "<span class='notfound'>Articolo non trovato.</span>";
+      }
+    });
+  </script>
+</body>
+</html>
